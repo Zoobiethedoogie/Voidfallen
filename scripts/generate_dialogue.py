@@ -142,7 +142,8 @@ def main(argv):
     parser = argparse.ArgumentParser(description='Generate PNG text using images from custom_font')
     parser.add_argument('text', nargs='*', help='Text to render (wrap in quotes). Use "\\n" for newlines. If omitted, you will be prompted.')
     parser.add_argument('--font-dir', default=None, help='Path to custom_font folder (defaults to repo custom_font or game_assets/custom_font)')
-    parser.add_argument('--output', default=None, help='Output PNG path (defaults to dialogue/<timestamp>.png)')
+    parser.add_argument('--name', default=None, help='Output filename (e.g. "hello.png") - saves to dialogue/<name>')
+    parser.add_argument('--output', default=None, help='Full output path (overrides --name)')
     parser.add_argument('--list-fonts', action='store_true', help='List available glyph mappings and exit')
     parser.add_argument('--bg', default=None, help='Background color as R,G,B (e.g. 255,255,255) or hex (#RRGGBB). If set, fills background')
     args = parser.parse_args(argv)
@@ -182,8 +183,12 @@ def main(argv):
                 print(repr(k), '->', mapping[k])
         return
 
-    out = args.output
-    if not out:
+    # Determine output path: --output > --name > timestamp default
+    if args.output:
+        out = args.output
+    elif args.name:
+        out = os.path.join(repo_root, 'dialogue', args.name)
+    else:
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
         out = os.path.join(repo_root, 'dialogue', f'dialogue_{ts}.png')
     bg_color = parse_color(args.bg)
